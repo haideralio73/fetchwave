@@ -76,7 +76,7 @@ cd fetchwave
 Then **double-click `start.bat`** (Windows) or run `./start.sh` (macOS/Linux).
 
 The first run installs dependencies, then your browser opens at
-<http://localhost:5177>. That's it.
+<http://localhost:3000>. That's it.
 
 To stop it, close the window it opened, or press `Ctrl+C` in it.
 
@@ -216,7 +216,7 @@ the files. No app store, no build tools.
 1. Start it with **`start-lan.bat`** instead (or `npm run start:lan`).
 2. Windows will ask about the firewall — allow it, and tick **Private networks**.
 3. Open **Settings** in FetchWave. It shows the address to use, something like
-   `http://192.168.1.42:5177`.
+   `http://192.168.1.42:3000`.
 4. On your phone — same Wi-Fi — open that address in Chrome.
 5. Tap **⋮ → Add to Home screen**.
 
@@ -266,9 +266,15 @@ specific video. Open the video itself and copy that link.
 Sites change their defences constantly. Update yt-dlp first:
 `pip install -U yt-dlp yt-dlp-ejs`.
 
-**Port 5177 is busy**
-FetchWave steps up to 5178, 5179 and so on automatically. The window tells you
-which one it used.
+**Port 3000 is busy**
+Another app is already using it — 3000 is a popular default. FetchWave steps up
+to 3001, 3002 and so on automatically, and the window tells you which one it
+used. To pin a specific port instead, set `PORT` before starting:
+
+```bash
+PORT=8080 npm start          # macOS / Linux
+set PORT=8080 && npm start   # Windows cmd
+```
 
 **A download is stuck**
 Press **×** to cancel, then the retry button. Partly-downloaded files resume

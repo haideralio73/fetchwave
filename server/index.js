@@ -294,7 +294,7 @@ app.get('*', (_req, res) => res.sendFile(path.join(PUBLIC_DIR, 'index.html')));
  * Boot
  * ------------------------------------------------------------------ */
 
-const BASE_PORT = Number(process.env.PORT) || 5177;
+const BASE_PORT = Number(process.env.PORT) || 3000;
 
 // Loopback by default. `--lan` (or HOST=0.0.0.0) also serves the local network
 // so a phone can reach it — opt-in, because it exposes the app to the LAN.
