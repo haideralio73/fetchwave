@@ -1,0 +1,22 @@
+{
+  "name": "fetchwave",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A local, ad-free video downloader. Paste a link, keep the video.",
+  "main": "server/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/index.js",
+    "start:lan": "node server/index.js --lan",
+    "dev": "node --watch server/index.js",
+    "icons": "node scripts/make-icons.mjs",
+    "test:platforms": "node scripts/platform-test.mjs"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "license": "MIT"
+}

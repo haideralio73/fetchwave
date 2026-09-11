@@ -1,0 +1,10 @@
+# Normalise text files in the repo, but keep line endings that matter.
+* text=auto eol=lf
+
+# Shell scripts must stay LF or they break on macOS/Linux.
+*.sh text eol=lf
+
+# Batch files must stay CRLF for cmd.exe.
+*.bat text eol=crlf
+
+*.png binary

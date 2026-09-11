@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en" data-platform="idle">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>FetchWave — paste a link, keep the video</title>
+<meta name="description" content="A fast, ad-free downloader for YouTube, TikTok, Instagram, Facebook and Snapchat." />
+<link rel="icon" href="/icons/icon-192.png" />
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#0a0a0b" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="FetchWave" />
+<link rel="apple-touch-icon" href="/icons/icon-192.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+<!-- structural background: blueprint grid, not blurred blobs -->
+<div class="field" aria-hidden="true">
+  <div class="grid-lines"></div>
+  <div class="vignette"></div>
+  <div class="scan"></div>
+</div>
+
+<header class="rail">
+  <a class="brand" href="/" aria-label="FetchWave">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M12 3v12.5M12 15.5l-4.2-4.2M12 15.5l4.2-4.2" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/>
+        <path d="M4 20h16" stroke="currentColor" stroke-width="2.4" stroke-linecap="square"/>
+      </svg>
+    </span>
+    <span class="brand-name">FETCHWAVE</span>
+  </a>
+
+  <nav class="tabs" role="tablist" aria-label="Sections">
+    <button class="tab is-active" role="tab" data-view="get" aria-selected="true">
+      <span class="tab-idx">01</span>Download
+    </button>
+    <button class="tab" role="tab" data-view="queue" aria-selected="false">
+      <span class="tab-idx">02</span>Queue<span class="tab-count" id="queueCount" hidden>0</span>
+    </button>
+    <button class="tab" role="tab" data-view="history" aria-selected="false">
+      <span class="tab-idx">03</span>Library
+    </button>
+    <span class="tab-glider" aria-hidden="true"></span>
+  </nav>
+
+  <span class="rail-spacer"></span>
+
+  <button class="rail-btn" id="openSettings" aria-label="Settings" title="Settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+      <path d="M3 7h13M19 7h2M3 17h5M11 17h10"/>
+      <rect x="16" y="4" width="3" height="6"/>
+      <rect x="8" y="14" width="3" height="6"/>
+    </svg>
+  </button>
+</header>
+
+<!-- live machine state, in monospace, always visible -->
+<div class="statusbar" id="statusbar">
+  <span class="st" id="stEngine"><i class="led"></i>booting</span>
+  <span class="st-sep">/</span>
+  <span class="st" id="stYtdlp">yt-dlp —</span>
+  <span class="st-sep">/</span>
+  <span class="st" id="stFfmpeg">ffmpeg —</span>
+  <span class="st-grow"></span>
+  <span class="st" id="stActivity">idle</span>
+</div>
+
+<main>
+  <!-- ============================ GET ============================ -->
+  <section class="view is-active" id="view-get">
+    <div class="hero">
+      <h1 class="hero-title">
+        <span class="line" data-text="PASTE ANY LINK.">PASTE ANY LINK.</span>
+        <span class="line accent" data-text="KEEP THE VIDEO.">KEEP THE VIDEO.</span>
+      </h1>
+
+      <p class="hero-sub">
+        Runs entirely on this machine. No ads, no uploads, no account.
+      </p>
+
+      <form class="input-bar" id="pasteForm" autocomplete="off">
+        <span class="prompt" id="dzIcon" aria-hidden="true">&#9656;</span>
+        <input
+          id="urlInput"
+          class="dz-input"
+          type="text"
+          inputmode="url"
+          spellcheck="false"
+          placeholder="paste a video link, or several at once"
+          aria-label="Video link"
+        />
+        <button type="button" class="btn ghost" id="pasteBtn">Paste</button>
+        <button type="submit" class="btn solid" id="fetchBtn">
+          <span class="btn-label">Fetch</span>
+          <span class="btn-spin" aria-hidden="true"></span>
+        </button>
+        <span class="bar-corner tl" aria-hidden="true"></span>
+        <span class="bar-corner tr" aria-hidden="true"></span>
+        <span class="bar-corner bl" aria-hidden="true"></span>
+        <span class="bar-corner br" aria-hidden="true"></span>
+      </form>
+
+      <div class="platform-strip" id="platformStrip" aria-label="Supported platforms"></div>
+    </div>
+
+    <div class="results" id="results" aria-live="polite"></div>
+  </section>
+
+  <!-- =========================== QUEUE =========================== -->
+  <section class="view" id="view-queue">
+    <div class="view-head">
+      <div class="vh-left">
+        <span class="vh-idx">02</span>
+        <h2>Queue</h2>
+        <p class="muted" id="queueSummary">nothing downloading</p>
+      </div>
+      <button class="btn ghost" id="clearFinished">Clear finished</button>
+    </div>
+    <div class="stack" id="queueList"></div>
+    <div class="empty" id="queueEmpty">
+      <span class="empty-mark">[ ]</span>
+      <p>Downloads will appear here.</p>
+    </div>
+  </section>
+
+  <!-- ========================== HISTORY =========================== -->
+  <section class="view" id="view-history">
+    <div class="view-head">
+      <div class="vh-left">
+        <span class="vh-idx">03</span>
+        <h2>Library</h2>
+        <p class="muted" id="historySummary">everything saved</p>
+      </div>
+      <div class="row-gap">
+        <button class="btn ghost" id="openFolder">Open folder</button>
+        <button class="btn ghost danger" id="clearHistory">Clear</button>
+      </div>
+    </div>
+    <div class="grid" id="historyGrid"></div>
+    <div class="empty" id="historyEmpty">
+      <span class="empty-mark">[ ]</span>
+      <p>Nothing saved yet.</p>
+    </div>
+  </section>
+</main>
+
+<!-- ========================== SETTINGS ========================== -->
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden aria-label="Settings">
+  <div class="drawer-head">
+    <span class="vh-idx">/</span>
+    <h2>Settings</h2>
+    <button class="rail-btn" id="closeSettings" aria-label="Close settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+
+  <div class="drawer-body">
+    <label class="field-row">
+      <span class="field-label">Save downloads to</span>
+      <input type="text" id="setDir" spellcheck="false" />
+      <span class="field-hint">Full path to a folder on this computer.</span>
+    </label>
+
+    <label class="field-row">
+      <span class="field-label">Default quality</span>
+      <div class="select-wrap">
+        <select id="setQuality">
+          <option value="best">Best available</option>
+          <option value="h2160">4K · 2160p</option>
+          <option value="h1440">2K · 1440p</option>
+          <option value="h1080">1080p</option>
+          <option value="h720">720p</option>
+          <option value="h480">480p</option>
+          <option value="audio">Audio only · MP3</option>
+        </select>
+      </div>
+    </label>
+
+    <label class="field-row">
+      <span class="field-label">Use cookies from browser</span>
+      <div class="select-wrap">
+        <select id="setCookies">
+          <option value="none">Don't use cookies</option>
+          <option value="chrome">Chrome</option>
+          <option value="edge">Edge</option>
+          <option value="firefox">Firefox</option>
+          <option value="brave">Brave</option>
+          <option value="opera">Opera</option>
+          <option value="vivaldi">Vivaldi</option>
+        </select>
+      </div>
+      <span class="field-hint">
+        Unlocks private and login-gated posts — and it's the fix for YouTube and TikTok.
+        Close the browser first so its cookie file can be read.
+      </span>
+    </label>
+
+    <label class="field-row">
+      <span class="field-label">Simultaneous downloads</span>
+      <div class="stepper">
+        <button type="button" id="concMinus" aria-label="Fewer">&minus;</button>
+        <output id="concValue">3</output>
+        <button type="button" id="concPlus" aria-label="More">+</button>
+      </div>
+    </label>
+
+    <label class="switch-row">
+      <span>
+        <span class="field-label">Embed English subtitles</span>
+        <span class="field-hint">Adds subtitle tracks to the MP4.</span>
+      </span>
+      <input type="checkbox" id="setSubs" class="switch" />
+    </label>
+
+    <div class="phone-card" id="phoneCard">
+      <span class="field-label">Use it from your phone</span>
+      <div id="phoneBody"></div>
+    </div>
+
+    <div class="engine-card" id="engineCard"></div>
+
+    <p class="fineprint">
+      Media is saved to this computer with
+      <a href="https://github.com/yt-dlp/yt-dlp" target="_blank" rel="noopener">yt-dlp</a>.
+      Download only what you have the right to keep.
+    </p>
+  </div>
+</aside>
+
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<script src="app.js" type="module"></script>
+</body>
+</html>

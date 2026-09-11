@@ -1,0 +1,10 @@
+node_modules/
+downloads/
+bin/
+config.json
+history.json
+scripts/platform-results.json
+*.part
+*.ytdl
+.DS_Store
+Thumbs.db
